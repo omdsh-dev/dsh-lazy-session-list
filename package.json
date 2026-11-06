@@ -1,7 +1,7 @@
 {
   "name": "dsh-lazy-session-list",
-  "version": "0.1.0",
-  "description": "Defer session detail projections until the conversation is opened, while preserving list and global statistics.",
+  "version": "0.2.0",
+  "description": "Keep a configurable native session-list index and defer other projections to per-session loading.",
   "license": "Apache-2.0",
   "type": "module",
   "main": "src/index.js",
@@ -25,6 +25,7 @@
   ],
   "peerDependencies": {
     "@deepseek-ai/cordis": "~4.0.5",
+    "@deepseek-ai/schemastery": "~3.18.5",
     "@deepseek-ai/dsh-api-session-controller": "0.2.1-rc.2"
   },
   "dsh": {

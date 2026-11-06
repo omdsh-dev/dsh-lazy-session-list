@@ -1,72 +1,82 @@
 import assert from 'node:assert/strict'
+import { isDeepStrictEqual } from 'node:util'
 import { Context, Service } from '@deepseek-ai/cordis'
 import * as plugin from '../src/index.js'
 
 const origin = process.argv[2] ?? 'http://127.0.0.1:3384'
-const deferred = ['contextHeaders', 'turnOutline', 'better-goal-history']
-const bytes = value => Buffer.byteLength(JSON.stringify(value))
+const listProjectionKeys = ['title', 'sessionListMetadata', 'subagentCatalog', 'agentPreset']
+const retained = new Set(listProjectionKeys)
+const serialize = value => JSON.stringify(value)
+const bytes = value => Buffer.byteLength(serialize(value))
 
-async function rpc(method, args) {
-  const response = await fetch(new URL('/api/' + method, origin), {
-    method: 'POST', headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ type: 'client-request', rpcId: crypto.randomUUID(), method, payload: { args } }),
-    signal: AbortSignal.timeout(20_000),
-  })
-  assert.equal(response.status, 200)
-  const envelope = await response.json()
-  assert.equal(envelope.result.ok, true, JSON.stringify(envelope.result.error))
-  return envelope
-}
-
-// Read the live data once; install the plugin only in this isolated replay context.
-// The running GUI, its profile and its packages are never modified by this script.
-const envelope = await rpc('session/list', { _request: {} })
+// Exactly one list request; no history/projections requests or per-session fan-out.
+// Never print response bodies, titles, session IDs, unknown keys or retained values.
+const response = await fetch(new URL('/api/session/list', origin), {
+  method: 'POST', headers: { 'content-type': 'application/json' },
+  body: serialize({ type: 'client-request', rpcId: crypto.randomUUID(), method: 'session/list', payload: { args: { _request: {} } } }),
+  signal: AbortSignal.timeout(20_000),
+})
+assert.equal(response.status, 200, 'session/list HTTP request failed')
+const envelope = await response.json().catch(() => { throw new Error('session/list returned invalid JSON') })
+assert.ok(envelope?.result?.ok === true, 'session/list RPC failed')
+assert.ok(Array.isArray(envelope.result.value?.items), 'session/list returned an invalid list')
 const original = envelope.result.value
-const before = bytes(envelope)
+const sourceJson = serialize(envelope)
+const before = Buffer.byteLength(sourceJson)
+
+// Replay only in an isolated Cordis instance; the running GUI is never modified.
 class ReplayController extends Service {
   constructor(ctx) { super(ctx, 'sessionController') }
   async list() { return original }
 }
 const ctx = new Context()
 try {
-  await ctx.plugin(ReplayController)
+  await ctx.plugin(ReplayController).await()
   const addon = ctx.plugin(plugin)
-  await addon
+  await addon.await()
   const slim = await ctx.sessionController.list({})
-  assert.deepEqual(slim.items.map(row => row.sessionId), original.items.map(row => row.sessionId))
+  assert.equal(slim.items.length, original.items.length, 'row count changed')
+  let omittedKeyOccurrences = 0
+  let rowsWithOmissions = 0
   for (let index = 0; index < slim.items.length; index++) {
-    const left = original.items[index]
-    const right = slim.items[index]
-    const { projections: source, ...sourceMeta } = left
-    const { projections: target, ...targetMeta } = right
-    assert.deepEqual(targetMeta, sourceMeta)
-    if (source === undefined) continue
-    assert.equal(target.kind, source.kind)
-    assert.equal(target.asOfSeq, source.asOfSeq)
-    for (const [key, value] of Object.entries(source.values)) {
-      if (deferred.includes(key)) assert.equal(Object.hasOwn(target.values, key), false, key)
-      else assert.equal(target.values[key], value, key)
+    const { projections: source, ...sourceMeta } = original.items[index]
+    const { projections: target, ...targetMeta } = slim.items[index]
+    assert.ok(isDeepStrictEqual(targetMeta, sourceMeta), 'row order or metadata changed')
+    if (source === undefined) {
+      assert.ok(target === undefined, 'projection block was synthesized')
+      continue
     }
+    const { values: sourceValues, ...sourceBlock } = source
+    const { values: targetValues, ...targetBlock } = target
+    assert.ok(isDeepStrictEqual(targetBlock, sourceBlock), 'projection kind, watermark or envelope changed')
+    assert.ok(Object.keys(targetValues).every(key => retained.has(key) && Object.hasOwn(sourceValues, key)), 'list contains an unselected or synthesized key')
+    let omitted = 0
+    for (const [key, value] of Object.entries(sourceValues)) {
+      if (retained.has(key)) assert.ok(targetValues[key] === value, 'a retained whole value changed')
+      else {
+        assert.ok(!Object.hasOwn(targetValues, key), 'an unselected key was retained')
+        omitted++
+      }
+    }
+    omittedKeyOccurrences += omitted
+    if (omitted > 0) rowsWithOmissions++
   }
-  assert.equal(bytes(envelope), before, 'the full source response must not be mutated')
+  const { items: _sourceItems, ...sourceListMeta } = original
+  const { items: _targetItems, ...targetListMeta } = slim
+  assert.ok(isDeepStrictEqual(targetListMeta, sourceListMeta), 'list envelope changed')
+  assert.ok(serialize(envelope) === sourceJson, 'source response was mutated')
   const after = bytes({ ...envelope, result: { ...envelope.result, value: slim } })
-  const sample = original.items.find(row => deferred.every(key => Object.hasOwn(row.projections?.values ?? {}, key)))
-    ?? original.items.find(row => row.projections?.values.contextHeaders !== undefined)
-  assert.ok(sample, 'need a real session containing deferred details')
-  const detail = (await rpc('session/projections', { request: { sessionId: sample.sessionId } })).result.value
-  assert.ok(detail)
-  const keys = deferred.filter(key => Object.hasOwn(detail.values, key))
-  assert.ok(keys.includes('contextHeaders'), 'the native detail endpoint must still serve deferred data')
+  assert.ok(after <= before, 'the policy increased the serialized response size')
   await addon.dispose()
-  assert.equal(await ctx.sessionController.list({}), original, 'unload restores the full list')
-  console.log(JSON.stringify({
-    mode: 'isolated replay of a live response; not installed in the running GUI',
-    rows: original.items.length, decodedBytesBefore: before, decodedBytesAfter: after,
+  assert.ok(await ctx.sessionController.list({}) === original, 'unload did not restore the source list')
+  console.log(serialize({
+    mode: 'isolated replay of one live list response; not installed in the running GUI',
+    listRequests: 1, detailRequests: 0, rows: original.items.length,
+    decodedBytesBefore: before, decodedBytesAfter: after,
     reductionPercent: Math.round((1 - after / before) * 1000) / 10,
-    deferredKeys: deferred, nativeDetailKeysVerified: keys,
-    keptSummaryKeys: ['contextTimeline', 'contextActivity'],
-    verified: ['row order and metadata', 'whole retained values and watermarks', 'source immutability', 'native detail API', 'unload restoration'],
-  }, null, 2))
+    listProjectionKeys, rowsWithOmissions, omittedKeyOccurrences,
+    verified: ['row order and metadata', 'generic allowlist', 'whole retained values and watermarks', 'source immutability', 'unload restoration'],
+  }))
 } finally {
   await ctx.fiber.dispose()
 }
