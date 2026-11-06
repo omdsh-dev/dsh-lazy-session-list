@@ -98,12 +98,12 @@ npm run smoke -- http://127.0.0.1:3384
 
 | 组件 | 当前验证版本 |
 | --- | --- |
-| DSH | `0.2.1-rc.2` |
-| Cordis | `4.0.5` |
-| Schemastery | `3.18.5` |
+| DSH | `0.2.1-rc.2`、`0.2.2-rc.1` |
+| Cordis | `4.0.5`、`4.1.0` |
+| Schemastery | `3.18.5`、`3.19.x` |
 | Node.js | `^22.19.0` 或 `>=24.0.0` |
 
-运行时由宿主提供 peer dependencies。纯 ESM，无构建步骤；其他 DSH 版本尚未验证。
+运行时由宿主提供 peer dependencies。纯 ESM，无构建步骤。0.2.2-rc.1 已在 2,700 个会话的真实实例上验证：列表由 17 个 projection 键减少到 4 个，解压 JSON 从 4.00 MB 降到 1.48 MB（−63%），单会话 `session/projections` 仍返回全部 23 个键。其他 0.2.x 版本未逐一验证。
 
 插件在**原生授权过滤完成之后、JSON 编码之前**处理列表结果，保留调用方 context、参数、取消信号与错误传播。它只包装当前 `sessionController` 实例的 `list`；完整 history、control baseline 与单会话 projections 继续使用宿主原逻辑。
 
