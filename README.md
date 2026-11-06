@@ -2,6 +2,8 @@
 
 DSH 宿主插件：为 `POST /api/session/list` 保留可配置的基本 projection 索引，其余字段通过原生接口按会话加载。面向任意 DSH 插件组合，不识别第三方插件名称、字段结构或私有接口。验证宿主版本为 DSH `0.2.1-rc.2`、Cordis `4.0.5`；纯 ESM，无构建步骤。
 
+本插件独立发布、独立安装，不属于 Apollo 整合包。安装 Apollo 不会安装或启用本插件；需要时将本插件单独加入目标 DSH profile。
+
 ## 通用契约
 
 默认仅保留四个 DSH 原生 projection key：
