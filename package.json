@@ -19,7 +19,7 @@
   },
   "engines": {
     "node": "^22.19.0 || >=24.0.0",
-    "dsh": "0.2.1-rc.2"
+    "dsh": ">=0.2.1-rc.2 <0.3.0"
   },
   "scripts": {
     "test": "node --test",
@@ -33,9 +33,9 @@
     "LICENSE"
   ],
   "peerDependencies": {
-    "@deepseek-ai/cordis": "~4.0.5",
-    "@deepseek-ai/schemastery": "~3.18.5",
-    "@deepseek-ai/dsh-api-session-controller": "0.2.1-rc.2"
+    "@deepseek-ai/cordis": "^4.0.5",
+    "@deepseek-ai/schemastery": "^3.18.5",
+    "@deepseek-ai/dsh-api-session-controller": ">=0.2.1-rc.2 <0.3.0"
   },
   "dsh": {
     "bundle": {
