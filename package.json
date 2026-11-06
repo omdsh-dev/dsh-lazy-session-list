@@ -3,6 +3,14 @@
   "version": "0.2.0",
   "description": "Keep a configurable native session-list index and defer other projections to per-session loading.",
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/omdsh-dev/dsh-lazy-session-list.git"
+  },
+  "homepage": "https://github.com/omdsh-dev/dsh-lazy-session-list#readme",
+  "bugs": {
+    "url": "https://github.com/omdsh-dev/dsh-lazy-session-list/issues"
+  },
   "type": "module",
   "main": "src/index.js",
   "exports": {
@@ -19,6 +27,7 @@
   },
   "files": [
     "src",
+    "docs/assets",
     "cordis.patch.yml",
     "README.md",
     "LICENSE"

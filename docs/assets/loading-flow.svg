@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="500" viewBox="0 0 1120 500" role="img" aria-labelledby="overview-title overview-desc">
+  <title id="overview-title">dsh-lazy-session-list: index first, full details on demand</title>
+  <desc id="overview-desc">The session list keeps a configurable native index. Opening one session loads its complete projections through the native history baseline or the single-session projections endpoint.</desc>
+  <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M1 1 L7 4 L1 7" fill="none" stroke="#3388bb" stroke-width="1.5"/></marker></defs>
+  <rect x="1" y="1" width="1118" height="498" rx="20" fill="#f8fafb" stroke="#dbe3e9"/>
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+    <rect x="40" y="30" width="232" height="28" rx="14" fill="#e8f3f8"/>
+    <text x="56" y="49" fill="#246d96" font-size="11" font-weight="700" letter-spacing="1.3">STANDALONE DSH PLUGIN</text>
+    <text x="1080" y="49" text-anchor="end" fill="#667887" font-size="13">dsh-lazy-session-list</text>
+    <text x="40" y="111" fill="#152d3d" font-size="42" font-weight="700" letter-spacing="-1.2">Browse the index.</text>
+    <text x="40" y="164" fill="#152d3d" font-size="38" font-weight="600" letter-spacing="-1">Load details when you need them.</text>
+    <text x="40" y="197" fill="#607281" font-size="16">A configurable list boundary. Native loading for every session.</text>
+    <rect x="40" y="231" width="316" height="202" rx="12" fill="#ffffff" stroke="#cfdce5"/>
+    <text x="60" y="258" fill="#3388bb" font-size="11" font-weight="700" letter-spacing="1.5">01 / LIST</text>
+    <text x="60" y="286" fill="#152d3d" font-size="17" font-weight="650">POST /api/session/list</text>
+    <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" fill="#4b6272">
+      <text x="60" y="318">title</text><text x="60" y="345">sessionListMetadata</text><text x="60" y="372">subagentCatalog</text><text x="60" y="399">agentPreset</text>
+    </g>
+    <path d="M368 332 H394" stroke="#3388bb" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="406" y="231" width="264" height="202" rx="12" fill="#eef6fb" stroke="#9dc8df"/>
+    <text x="426" y="258" fill="#3388bb" font-size="11" font-weight="700" letter-spacing="1.5">02 / OPEN</text>
+    <text x="426" y="295" fill="#152d3d" font-size="20" font-weight="650">Choose one session.</text>
+    <text x="426" y="325" fill="#526c7e" font-size="14">Load its complete baseline.</text>
+    <rect x="426" y="359" width="224" height="44" rx="8" fill="#ffffff" stroke="#c6deeb"/>
+    <text x="538" y="386" text-anchor="middle" fill="#246d96" font-size="13" font-weight="600">Native session loading</text>
+    <path d="M682 332 H708" stroke="#3388bb" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="720" y="231" width="360" height="202" rx="12" fill="#ffffff" stroke="#cfdce5"/>
+    <text x="740" y="258" fill="#3388bb" font-size="11" font-weight="700" letter-spacing="1.5">03 / DETAIL</text>
+    <text x="740" y="295" fill="#152d3d" font-size="20" font-weight="650">Full projection values.</text>
+    <text x="740" y="325" fill="#607281" font-size="14">History baseline or session/projections</text>
+    <rect x="740" y="351" width="154" height="29" rx="6" fill="#f0f4f6"/><text x="817" y="370" text-anchor="middle" fill="#4b6272" font-size="12">Complete values</text>
+    <rect x="904" y="351" width="156" height="29" rx="6" fill="#f0f4f6"/><text x="982" y="370" text-anchor="middle" fill="#4b6272" font-size="12">Original watermark</text>
+    <text x="740" y="405" fill="#607281" font-size="13">No per-session fan-out from the list.</text>
+    <text x="40" y="470" fill="#607281" font-size="13">Native permissions retained</text><circle cx="249" cy="465" r="2" fill="#a1b2bf"/>
+    <text x="264" y="470" fill="#607281" font-size="13">Whole values preserved</text><circle cx="450" cy="465" r="2" fill="#a1b2bf"/>
+    <text x="465" y="470" fill="#607281" font-size="13">No plugin-specific rules</text>
+  </g>
+</svg>
